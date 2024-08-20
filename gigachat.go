@@ -5,7 +5,6 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"github.com/nu7hatch/gouuid"
 	"io"
 	"log"
@@ -149,15 +148,15 @@ func (g *Gigachat) Auth() (int64, string) {
 	if response.StatusCode != http.StatusOK {
 		return 0, ""
 	}
-	fmt.Println(response.StatusCode)
+	log.Println(response.StatusCode)
 	if response.StatusCode != http.StatusOK {
 		return 0, ""
 	}
 	body, err := io.ReadAll(response.Body)
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 	}
-	fmt.Println(string(body))
+	log.Println(string(body))
 	defer response.Body.Close()
 
 	var result TokenResponse

@@ -1,16 +1,19 @@
 package gigachat
 
+// Ответ с токенос
 type TokenResponse struct {
 	AccessToken string `json:"access_token"`
 	ExpiresAt   int64  `json:"expires_at"`
 }
 
+// Модель
 type ModelItem struct {
 	ID      string `json:"id"`
 	Object  string `json:"object"`
 	OwnedBy string `json:"owned_by"`
 }
 
+// Ответ на запрос списка моделей
 type ModelsResponse struct {
 	Object string      `json:"object"`
 	Data   []ModelItem `json:"data"`
@@ -21,11 +24,13 @@ type MessageRequest struct {
 	Content string `json:"content"`
 }
 
+// Статистика использования
 type Usage struct {
 	PromptTokens     int `json:"prompt_tokens"`
 	CompletionTokens int `json:"completion_tokens,omitempty"`
 	TotalTokens      int `json:"total_tokens,omitempty"`
 }
+
 type MessageResponse struct {
 	Role           string     `json:"role"`
 	Content        string     `json:"content"`
