@@ -1,3 +1,7 @@
+// Package gigachat Предоставляет доступ Gigachat
+//
+// Этот пакет сделан для того чтоб спрашивать у нейросети gigachat от сбера.
+// Так и делать embedding
 package gigachat
 
 import (
