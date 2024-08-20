@@ -16,14 +16,27 @@ import (
 )
 
 type Gigachat struct {
+	ApiHost           string
+	RepetitionPenalty int
+	TopP              float32
+	Model             string
+	MaxTokens         int
+	Temperature       float32
 }
 
 func NewGigachat() *Gigachat {
-	return &Gigachat{}
+	return &Gigachat{
+		ApiHost:           GigaChatApiHost,
+		RepetitionPenalty: 1,
+		TopP:              1.0,
+		Model:             GigaChatModel,
+		MaxTokens:         GigaChatMaxTokens,
+		Temperature:       1,
+	}
 }
 
-func (g *Gigachat) GetExpiresAtFromFile() int64 {
-	data, err := os.ReadFile(g.GetExpiresFile())
+func (g *Gigachat) getExpiresAtFromFile() int64 {
+	data, err := os.ReadFile(g.getExpiresFile())
 	if err != nil {
 		return 0
 	}
@@ -33,14 +46,14 @@ func (g *Gigachat) GetExpiresAtFromFile() int64 {
 	}
 	return i
 }
-func (g *Gigachat) GetTokenFromFile() string {
-	data, err := os.ReadFile(g.GetTokenFile())
+func (g *Gigachat) getTokenFromFile() string {
+	data, err := os.ReadFile(g.getTokenFile())
 	if err != nil {
 		return ""
 	}
 	return string(data)
 }
-func (g Gigachat) GetExpiresFile() string {
+func (g Gigachat) getExpiresFile() string {
 	filename, exists := os.LookupEnv(GigaChatExpiresFileEnv)
 	if !exists {
 		return ".gigachat_expires"
@@ -48,7 +61,7 @@ func (g Gigachat) GetExpiresFile() string {
 	return filename
 }
 
-func (g Gigachat) GetTokenFile() string {
+func (g Gigachat) getTokenFile() string {
 	filename, exists := os.LookupEnv(GigaChatTokenFileEnv)
 	if !exists {
 		return ".gigachat_token"
@@ -56,54 +69,57 @@ func (g Gigachat) GetTokenFile() string {
 	return filename
 }
 
-func (g *Gigachat) SetExpiresAtToFile(value int64) {
-	fh, _ := os.OpenFile(g.GetExpiresFile(), os.O_TRUNC|os.O_WRONLY|os.O_CREATE, 0666)
+func (g *Gigachat) setExpiresAtToFile(value int64) {
+	fh, _ := os.OpenFile(g.getExpiresFile(), os.O_TRUNC|os.O_WRONLY|os.O_CREATE, 0666)
 	fh.WriteString(strconv.FormatInt(value, 10))
 	defer fh.Close()
 }
-func (g *Gigachat) SetTokenToFile(value string) {
-	fh, _ := os.OpenFile(g.GetTokenFile(), os.O_TRUNC|os.O_WRONLY|os.O_CREATE, 0666)
+func (g *Gigachat) setTokenToFile(value string) {
+	fh, _ := os.OpenFile(g.getTokenFile(), os.O_TRUNC|os.O_WRONLY|os.O_CREATE, 0666)
 	fh.WriteString(value)
 	defer fh.Close()
 }
-func (g *Gigachat) GetCurrentToken() string {
-	expAt := g.GetExpiresAtFromFile()
-	token := g.GetTokenFromFile()
+func (g *Gigachat) getCurrentToken() string {
+	expAt := g.getExpiresAtFromFile()
+	token := g.getTokenFromFile()
 	apochNow := time.Now().Unix()
 	timeDelta := apochNow - (expAt / 1000)
 	if timeDelta > 0 {
 		newExpAt, token2 := g.Auth()
-		g.SetExpiresAtToFile(newExpAt)
-		g.SetTokenToFile(token2)
+		g.setExpiresAtToFile(newExpAt)
+		g.setTokenToFile(token2)
 		token = token2
 	}
 	return token
 }
-func (g Gigachat) GetRequestUrl(path string) string {
-	return "https://" + GigaChatApiHost + path
+func (g Gigachat) getRequestUrl(path string) string {
+	return "https://" + g.ApiHost + path
 }
 
-func (g *Gigachat) GetRequest(url string) (*http.Request, error) {
+func (g *Gigachat) getRequest(url string) (*http.Request, error) {
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 	request, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return nil, err
 	}
 	request.Header.Set("Accept", "application/json")
-	request.Header.Set("Authorization", "Bearer "+g.GetCurrentToken())
+	request.Header.Set("Authorization", "Bearer "+g.getCurrentToken())
 	return request, nil
 }
-func (g *Gigachat) PostRequest(url string, body io.Reader) (*http.Request, error) {
+
+func (g *Gigachat) postRequest(url string, body io.Reader) (*http.Request, error) {
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 	request, err := http.NewRequest("POST", url, body)
 	request.Header.Add("Content-Type", "application/json")
 	request.Header.Set("Accept", "application/json")
-	request.Header.Set("Authorization", "Bearer "+g.GetCurrentToken())
+	request.Header.Set("Authorization", "Bearer "+g.getCurrentToken())
 	if err != nil {
 		return nil, err
 	}
 	return request, nil
 }
+
+// Auth Авторизация для получения токена для запросов.
 func (g *Gigachat) Auth() (int64, string) {
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 	u, err := uuid.NewV4()
@@ -117,9 +133,9 @@ func (g *Gigachat) Auth() (int64, string) {
 	if e != nil {
 		log.Fatal(e)
 	}
-	//if response.StatusCode != http.StatusOK {
-	//	return "Так что-то пошло не так на удаленной стороне. Повтори вопрос.", nil
-	//}
+	if response.StatusCode != http.StatusOK {
+		return 0, ""
+	}
 	fmt.Println(response.StatusCode)
 	if response.StatusCode != http.StatusOK {
 		return 0, ""
@@ -140,9 +156,10 @@ func (g *Gigachat) Auth() (int64, string) {
 	return result.ExpiresAt, result.AccessToken
 }
 
+// GetModels Получить список моделей.
 func (g *Gigachat) GetModels() ([]ModelItem, error) {
-	url := g.GetRequestUrl(GigaChatModelsPath)
-	request, err := g.GetRequest(url)
+	url := g.getRequestUrl(GigaChatModelsPath)
+	request, err := g.getRequest(url)
 	if err != nil {
 		return nil, err
 	}
@@ -164,8 +181,9 @@ func (g *Gigachat) GetModels() ([]ModelItem, error) {
 	return result.Data, nil
 }
 
+// Embeddings получить вектора текста. Ограничение по количеству что-то типа 512.
 func (g *Gigachat) Embeddings(input string) ([]float32, error) {
-	url := g.GetRequestUrl(GigaChatEmbeddingsPath)
+	url := g.getRequestUrl(GigaChatEmbeddingsPath)
 	var inputs []string
 	inputs = append(inputs, input)
 	jData, errJsonRequestEncode := json.Marshal(&EmbeddingsRequest{
@@ -175,7 +193,7 @@ func (g *Gigachat) Embeddings(input string) ([]float32, error) {
 	if errJsonRequestEncode != nil {
 		return nil, errJsonRequestEncode
 	}
-	request, err := g.PostRequest(url, bytes.NewReader(jData))
+	request, err := g.postRequest(url, bytes.NewReader(jData))
 	if err != nil {
 		return nil, err
 	}
@@ -196,30 +214,23 @@ func (g *Gigachat) Embeddings(input string) ([]float32, error) {
 	return result.Data[0].Embedding, nil
 }
 
-func (g *Gigachat) ChatCompletions(input []string) (string, error) {
-	url := g.GetRequestUrl(GigaChatChatCompletionPath)
-	temperature := float32(1.0)
-	var messages []MessageRequest
-	for _, inputItem := range input {
-		messages = append(messages, MessageRequest{
-			Role:    "user",
-			Content: inputItem,
-		})
-	}
+// ChatCompletions Сдалать запрос к модели.
+func (g *Gigachat) ChatCompletions(messages []MessageRequest) (string, error) {
+	url := g.getRequestUrl(GigaChatChatCompletionPath)
 	jData, errJsonRequestEncode := json.Marshal(&ChatCompletionRequest{
 		Model:             GigaChatModel,
 		MaxTokens:         GigaChatMaxTokens,
-		Temperature:       temperature,
+		Temperature:       g.Temperature,
 		Messages:          messages,
 		Stream:            false,
-		RepetitionPenalty: 1,
-		TopP:              1,
+		RepetitionPenalty: g.RepetitionPenalty,
+		TopP:              g.TopP,
 		UpdateInterval:    0,
 	})
 	if errJsonRequestEncode != nil {
 		return "", errJsonRequestEncode
 	}
-	request, err := g.PostRequest(url, bytes.NewReader(jData))
+	request, err := g.postRequest(url, bytes.NewReader(jData))
 	if err != nil {
 		return "", err
 	}
@@ -240,4 +251,14 @@ func (g *Gigachat) ChatCompletions(input []string) (string, error) {
 		log.Fatal(err)
 	}
 	return result.Choices[0].Message.Content, nil
+}
+
+// Ask Просто спросить у модели
+func (g *Gigachat) Ask(input string) (string, error) {
+	return g.ChatCompletions([]MessageRequest{
+		{
+			Role:    "user",
+			Content: input,
+		},
+	})
 }
