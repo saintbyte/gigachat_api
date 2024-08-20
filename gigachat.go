@@ -22,6 +22,7 @@ type Gigachat struct {
 	Model             string
 	MaxTokens         int
 	Temperature       float32
+	AuthData          string
 }
 
 func NewGigachat() *Gigachat {
@@ -32,6 +33,7 @@ func NewGigachat() *Gigachat {
 		Model:             GigaChatModel,
 		MaxTokens:         GigaChatMaxTokens,
 		Temperature:       1,
+		AuthData:          "",
 	}
 }
 
@@ -119,6 +121,17 @@ func (g *Gigachat) postRequest(url string, body io.Reader) (*http.Request, error
 	return request, nil
 }
 
+func (g *Gigachat) getAuthData() string {
+	value, exists := os.LookupEnv(GigaChatAuthData)
+	if exists {
+		return value
+	}
+	if g.AuthData != "" {
+		return g.AuthData
+	}
+	return ""
+}
+
 // Auth Авторизация для получения токена для запросов.
 func (g *Gigachat) Auth() (int64, string) {
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
@@ -126,7 +139,7 @@ func (g *Gigachat) Auth() (int64, string) {
 	request, _ := http.NewRequest("POST", GigaChatOauthUrl, bytes.NewBufferString("scope=GIGACHAT_API_PERS"))
 	request.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	request.Header.Set("RqUID", u.String())
-	request.Header.Set("Authorization", "Basic "+os.Getenv(GigaChatAuthData))
+	request.Header.Set("Authorization", "Basic "+g.getAuthData())
 	client := &http.Client{}
 	response, e := client.Do(request)
 
