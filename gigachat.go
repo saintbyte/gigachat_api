@@ -92,7 +92,7 @@ func (g *Gigachat) getCurrentToken() string {
 	}
 	return token
 }
-func (g Gigachat) getRequestUrl(path string) string {
+func (g *Gigachat) getRequestUrl(path string) string {
 	return "https://" + g.ApiHost + path
 }
 
