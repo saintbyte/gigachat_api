@@ -6,7 +6,7 @@ import (
 )
 
 func main() {
-	chat := gigachat.Gigachat{}
+	chat := gigachat.NewGigachat()
 	models, err := chat.GetModels()
 	if err != nil {
 		log.Fatal(err)

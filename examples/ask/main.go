@@ -1,8 +1,15 @@
 package main
 
-import gigachat "github.com/saintbyte/gigachat_api"
+import (
+	gigachat "github.com/saintbyte/gigachat_api"
+	"log"
+)
 
 func main() {
-	chat := gigachat.Gigachat{}
-	chat.ChatCompletions()
+	chat := gigachat.NewGigachat()
+	aswer, err := chat.Ask("Сколько рыбы в море?")
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Println(aswer)
 }
