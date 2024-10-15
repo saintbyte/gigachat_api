@@ -152,10 +152,6 @@ func (g *Gigachat) Auth() (int64, string) {
 	if response.StatusCode != http.StatusOK {
 		return 0, ""
 	}
-	log.Println(response.StatusCode)
-	if response.StatusCode != http.StatusOK {
-		return 0, ""
-	}
 	body, err := io.ReadAll(response.Body)
 	if err != nil {
 		log.Println(err)
