@@ -230,8 +230,8 @@ func (g *Gigachat) Embeddings(input string) ([]float32, error) {
 func (g *Gigachat) ChatCompletions(messages []MessageRequest) (string, error) {
 	url := g.getRequestUrl(GigaChatChatCompletionPath)
 	jData, errJsonRequestEncode := json.Marshal(&ChatCompletionRequest{
-		Model:             GigaChatModel,
-		MaxTokens:         GigaChatMaxTokens,
+		Model:             g.Model,
+		MaxTokens:         g.MaxTokens,
 		Temperature:       g.Temperature,
 		Messages:          messages,
 		Stream:            false,
