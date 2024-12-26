@@ -13,4 +13,6 @@ const (
 	GigaChatModel                  = "GigaChat"
 	GigaChatMaxTokens              = 16384
 	MaxEmbeddingSize           int = 8192
+	GigaChatRoleUser               = "user"
+	GigaChatRoleSystem             = "system"
 )

@@ -10,7 +10,6 @@ func main() {
 	answer, err := chat.Ask("Сколько рыбы в море?")
 	if err != nil {
 		slog.Error("Ask error:", err)
-		return
 	}
 	slog.Info(answer)
 }
