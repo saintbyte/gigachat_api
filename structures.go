@@ -26,9 +26,10 @@ type MessageRequest struct {
 
 // Статистика использования
 type Usage struct {
-	PromptTokens     int `json:"prompt_tokens"`
-	CompletionTokens int `json:"completion_tokens,omitempty"`
-	TotalTokens      int `json:"total_tokens,omitempty"`
+	// Данные об использовании модели.
+	PromptTokens     int `json:"prompt_tokens"`               // int32 Количество токенов во входящем сообщении (роль user).
+	CompletionTokens int `json:"completion_tokens,omitempty"` // int32  Количество токенов, сгенерированных моделью (роль assistant).
+	TotalTokens      int `json:"total_tokens,omitempty"`      //int32 Общее количество токенов.
 }
 
 type MessageResponse struct {
