@@ -39,9 +39,11 @@ type MessageResponse struct {
 }
 
 type ChoicesResponse struct {
-	Message      MessageRequest `json:"message"`
-	Index        int            `json:"index"`
-	FinishReason string         `json:"finish_reason"`
+	Message          MessageRequest       `json:"message"`
+	Index            int                  `json:"index"`
+	FinishReason     string               `json:"finish_reason"`
+	FunctionsStateId string               `json:"functions_state_id,omitempty"`
+	FunctionCall     FunctionCallResponse `json:"function_call,omitempty"`
 }
 
 type ChatCompletionRequest struct {
@@ -53,6 +55,8 @@ type ChatCompletionRequest struct {
 	TopP              float32          `json:"top_p"`
 	MaxTokens         int              `json:"max_tokens"`
 	UpdateInterval    int              `json:"update_interval"`
+	FunctionCall      string           `json:"function_call,omitempty"`
+	Functions         []Function       `json:"functions,omitempty"`
 }
 
 type ChatCompletionResponse struct {
@@ -63,6 +67,10 @@ type ChatCompletionResponse struct {
 	Object  string            `json:"object"`
 }
 
+type FunctionCallResponse struct {
+	Name      string            `json:"name"`
+	Arguments map[string]string `json:"arguments,omitempty"`
+}
 type EmbeddingsRequest struct {
 	Model string   `json:"model"`
 	Input []string `json:"input"`
@@ -77,4 +85,31 @@ type EmbeddingsResponse struct {
 		Usage     Usage     `json:"usage"`
 	} `json:"data"`
 	Model string `json:"model"`
+}
+
+// Функции
+
+type Function struct {
+	Name             string       `json:"name"`
+	Description      string       `json:"description"`
+	Parameters       Parameters   `json:"parameters"`
+	ReturnParameters []Parameters `json:"return_parameters,omitempty"`
+	FewShotExamples  []Example    `json:"few_shot_examples,omitempty"`
+}
+
+type Parameters struct {
+	Type       string              `json:"type"`
+	Properties map[string]Property `json:"properties"`
+	Required   []string            `json:"required"`
+}
+
+type Property struct {
+	Type        string   `json:"type"`
+	Enum        []string `json:"enum,omitempty"`
+	Description string   `json:"description"`
+}
+
+type Example struct {
+	Request string            `json:"request"`
+	Params  map[string]string `json:"params"`
 }

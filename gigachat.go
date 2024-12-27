@@ -23,6 +23,7 @@ type Gigachat struct {
 	MaxTokens         int
 	Temperature       float32
 	AuthData          string
+	Functions         []Function
 }
 
 func NewGigachat() *Gigachat {
@@ -34,6 +35,7 @@ func NewGigachat() *Gigachat {
 		MaxTokens:         GigaChatMaxTokens,
 		Temperature:       1,
 		AuthData:          "",
+		Functions:         []Function{},
 	}
 }
 
@@ -122,10 +124,16 @@ func (g *Gigachat) Embeddings(input string) ([]float32, error) {
 	return result.Data[0].Embedding, nil
 }
 
+// Получить функции
+func (g *Gigachat) getFunctions() []Function {
+	return g.Functions
+}
+
 // ChatCompletions Сдалать запрос к модели.
-func (g *Gigachat) ChatCompletions(messages []MessageRequest) (string, error) {
+func (g *Gigachat) ChatCompletions(messages []MessageRequest) (ChatCompletionResponse, error) {
 	url := g.getRequestUrl(GigaChatChatCompletionPath)
-	jData, errJsonRequestEncode := json.Marshal(&ChatCompletionRequest{
+
+	chatRequest := ChatCompletionRequest{
 		Model:             g.Model,
 		MaxTokens:         g.MaxTokens,
 		Temperature:       g.Temperature,
@@ -134,39 +142,48 @@ func (g *Gigachat) ChatCompletions(messages []MessageRequest) (string, error) {
 		RepetitionPenalty: g.RepetitionPenalty,
 		TopP:              g.TopP,
 		UpdateInterval:    0,
-	})
+	}
+	if len(g.getFunctions()) > 0 {
+		chatRequest.FunctionCall = GigaChatFunctionCallModeAuto
+		chatRequest.Functions = g.getFunctions()
+	}
+	jData, errJsonRequestEncode := json.Marshal(&chatRequest)
 	if errJsonRequestEncode != nil {
-		return "", errJsonRequestEncode
+		return ChatCompletionResponse{}, errJsonRequestEncode
 	}
 	request, err := g.postRequest(url, bytes.NewReader(jData))
 	if err != nil {
-		return "", err
+		return ChatCompletionResponse{}, err
 	}
 	client := &http.Client{}
 	response, err := client.Do(request)
 	if err != nil {
-		return "", err
+		return ChatCompletionResponse{}, err
 	}
 	if response.StatusCode != http.StatusOK {
-
-		return "", errors.New("Response status: " + string(response.Status))
+		return ChatCompletionResponse{}, errors.New("Response status: " + string(response.Status))
 	}
 	body, err := io.ReadAll(response.Body)
+	slog.Info("body:", body)
 	defer response.Body.Close()
 	var result ChatCompletionResponse
 	err = json.Unmarshal(body, &result)
 	if err != nil {
 		slog.Error("Json Unmarshal error:", err)
 	}
-	return result.Choices[0].Message.Content, nil
+	return result, nil
 }
 
 // Ask Просто спросить у модели
 func (g *Gigachat) Ask(input string) (string, error) {
-	return g.ChatCompletions([]MessageRequest{
+	result, err := g.ChatCompletions([]MessageRequest{
 		{
 			Role:    GigaChatRoleUser,
 			Content: input,
 		},
 	})
+	if err != nil {
+		return "", err
+	}
+	return result.Choices[0].Message.Content, nil
 }

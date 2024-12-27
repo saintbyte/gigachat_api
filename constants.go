@@ -25,19 +25,22 @@ const (
 	GigaChatRoleUser      = "user"
 	GigaChatRoleSystem    = "system"
 	GigaChatRoleAssistant = "assistant"
+	GigaChatRoleFunction  = "function" //  В сообщении с этой ролью передавайте в поле content валидный JSON-объект с результатами работы функции.
 )
 
-//'finish_reason': 'function_call'
-/*
-finish_reason
-string
-Возможные значения: [stop, length, function_call, blacklist, error]
+//Причины завершения.
 
-Причина завершения гипотезы. Возможные значения:
+const (
+	GigaChatFinishReasonStop         = "stop"          // модель закончила формировать гипотезу и вернула полный ответ;
+	GigaChatFinishReasonLength       = "length"        // достигнут лимит токенов в сообщении;
+	GigaChatFinishReasonFunctionCall = "function_call" // указывает, что при запросе была вызвана встроенная функция или сгенерированы аргументы для пользовательской функции;
+	GigaChatFinishReasonBlackList    = "blacklist"     //запрос попадает под тематические ограничения.
+	GigaChatFinishReasonError        = "blacklist"     // ответ модели содержит невалидные аргументы пользовательской функции.
+)
 
-stop — модель закончила формировать гипотезу и вернула полный ответ;
-length — достигнут лимит токенов в сообщении;
-function_call — указывает, что при запросе была вызвана встроенная функция или сгенерированы аргументы для пользовательской функции;
-blacklist — запрос попадает под тематические ограничения.
-error — ответ модели содержит невалидные аргументы пользовательской функции.
-*/
+//Функции
+
+const (
+	GigaChatFunctionCallModeAuto = "auto"
+	GigaChatFunctionCallModeNone = "none"
+)
