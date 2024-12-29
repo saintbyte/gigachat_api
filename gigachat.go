@@ -40,7 +40,7 @@ func NewGigachat() *Gigachat {
 }
 
 func (g *Gigachat) getRequestUrl(path string) string {
-	return "https://" + g.ApiHost + path
+	return "https://" + g.ApiHost + GigaChatApiPath + path
 }
 
 func (g *Gigachat) getRequest(url string) (*http.Request, error) {

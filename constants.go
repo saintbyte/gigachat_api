@@ -12,9 +12,18 @@ const (
 // Ручки API
 const (
 	GigaChatApiHost            = "gigachat.devices.sberbank.ru" //1 - gigachat.devices.sberbank.ru 2  gigachat-preview.devices.sberbank.ru
-	GigaChatModelsPath         = "/api/v1/models"
-	GigaChatChatCompletionPath = "/api/v1/chat/completions"
-	GigaChatEmbeddingsPath     = "/api/v1/embeddings"
+	GigaChatApiPath            = "/api/v1/"
+	GigaChatChatCompletionPath = "chat/completions"
+	GigaChatEmbeddingsPath     = "embeddings"
+	GigaChatModelsPath         = "models"
+)
+
+// Ручки API для файлов
+const (
+	GigaChatChatFileListPath   = "files"
+	GigaChatChatFileUploadPath = "files"
+	GigaChatChatFileGetPath    = "files"
+	GigaChatChatFileDeletePath = "files"
 )
 
 // Настройки

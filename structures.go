@@ -20,8 +20,9 @@ type ModelsResponse struct {
 }
 
 type MessageRequest struct {
-	Role    string `json:"role"`
-	Content string `json:"content"`
+	Role        string   `json:"role"`
+	Content     string   `json:"content"`
+	Attachments []string `json:"attachments,omitempty"`
 }
 
 // Статистика использования
@@ -112,4 +113,13 @@ type Property struct {
 type Example struct {
 	Request string            `json:"request"`
 	Params  map[string]string `json:"params"`
+}
+type File struct {
+	Bytes        int    `json:"bytes"`
+	CreatedAt    int    `json:"created_at"`
+	Filename     string `json:"filename"`
+	Id           string `json:"id"`
+	Object       string `json:"object"`
+	Purpose      string `json:"purpose"`
+	AccessPolicy string `json:"access_policy"`
 }
