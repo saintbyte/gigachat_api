@@ -114,7 +114,7 @@ type Example struct {
 	Request string            `json:"request"`
 	Params  map[string]string `json:"params"`
 }
-type File struct {
+type UploadedFile struct {
 	Bytes        int    `json:"bytes"`
 	CreatedAt    int    `json:"created_at"`
 	Filename     string `json:"filename"`

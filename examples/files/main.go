@@ -3,6 +3,7 @@ package main
 import (
 	gigachat "github.com/saintbyte/gigachat_api"
 	"log/slog"
+	"os"
 )
 
 func main() {
@@ -16,6 +17,11 @@ func main() {
 		Role:    gigachat.GigaChatRoleUser,
 		Content: "Напиши код для python",
 	})
+	_, err := chat.UploadFile("README.md")
+	if err != nil {
+		slog.Error("File upload error:", err)
+		os.Exit(0)
+	}
 	result, err := chat.ChatCompletions(messages)
 	if err != nil {
 		slog.Error("Ask error:", err)

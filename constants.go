@@ -53,3 +53,5 @@ const (
 	GigaChatFunctionCallModeAuto = "auto"
 	GigaChatFunctionCallModeNone = "none"
 )
+
+// Файл
