@@ -54,6 +54,7 @@ func (g *Gigachat) getRequest(url string) (*http.Request, error) {
 	return request, nil
 }
 
+// Создаем POST запрос к API
 func (g *Gigachat) postRequest(url string, body io.Reader) (*http.Request, error) {
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 	request, err := http.NewRequest("POST", url, body)
@@ -148,6 +149,7 @@ func (g *Gigachat) ChatCompletions(messages []MessageRequest) (ChatCompletionRes
 		chatRequest.Functions = g.getFunctions()
 	}
 	jData, errJsonRequestEncode := json.Marshal(&chatRequest)
+	slog.Info("jData:", jData)
 	if errJsonRequestEncode != nil {
 		return ChatCompletionResponse{}, errJsonRequestEncode
 	}

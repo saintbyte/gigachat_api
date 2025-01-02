@@ -160,8 +160,6 @@ func (g *Gigachat) getUploadData(file *os.File, fileName string) (*bytes.Buffer,
 func (g *Gigachat) UploadData(fileReader *os.File, fileName string) (file UploadedFile, err error) {
 	url := g.getRequestUrl(GigaChatChatFileUploadPath)
 	data, writer, err := g.getUploadData(fileReader, fileName)
-	slog.Info("data:", data)
-	slog.Info("writer:", writer)
 	request, err := g.postUploadRequest(url, data, writer)
 	if err != nil {
 		return UploadedFile{}, err
@@ -176,7 +174,6 @@ func (g *Gigachat) UploadData(fileReader *os.File, fileName string) (file Upload
 	}
 	body, err := io.ReadAll(response.Body)
 	defer response.Body.Close()
-	slog.Info("body:", body)
 	var result UploadedFile
 	err2 := json.Unmarshal(body, &result)
 	if err2 != nil {

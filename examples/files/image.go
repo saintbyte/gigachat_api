@@ -9,7 +9,7 @@ import (
 func main() {
 	chat := gigachat.NewGigachat()
 
-	uploadedFile, err := chat.UploadFile("LICENSE.txt")
+	uploadedFile, err := chat.UploadFile("docs/images/go-logo_aqua.png")
 	if err != nil {
 		slog.Error("File upload error:", err)
 		os.Exit(0)
@@ -22,12 +22,12 @@ func main() {
 	})
 	messages = append(messages, gigachat.MessageRequest{
 		Role:    gigachat.GigaChatRoleUser,
-		Content: "Расскажи вкратце, что изложено в документе?", // Не используйте слова файл или аттач - не понимает
+		Content: "Поведай что в документе", // Не используйте слова файл или аттач - не понимает
 		Attachments: []string{
 			uploadedFile.Id,
 		},
 	})
-
+	slog.Info("messages:", messages)
 	result, err := chat.ChatCompletions(messages)
 	if err != nil {
 		slog.Error("Ask error:", err)
