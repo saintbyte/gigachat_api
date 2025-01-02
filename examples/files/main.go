@@ -8,6 +8,13 @@ import (
 
 func main() {
 	chat := gigachat.NewGigachat()
+
+	uploadedFile, err := chat.UploadFile("LICENSE.txt")
+	if err != nil {
+		slog.Error("File upload error:", err)
+		os.Exit(0)
+	}
+
 	messages := []gigachat.MessageRequest{}
 	messages = append(messages, gigachat.MessageRequest{
 		Role:    gigachat.GigaChatRoleSystem,
@@ -15,13 +22,12 @@ func main() {
 	})
 	messages = append(messages, gigachat.MessageRequest{
 		Role:    gigachat.GigaChatRoleUser,
-		Content: "Напиши код для python",
+		Content: "Расскажи вкратце, что изложено в документе?", // Не используйте слова файл или аттач - не понимает
+		Attachments: []string{
+			uploadedFile.Id,
+		},
 	})
-	_, err := chat.UploadFile("README.md")
-	if err != nil {
-		slog.Error("File upload error:", err)
-		os.Exit(0)
-	}
+
 	result, err := chat.ChatCompletions(messages)
 	if err != nil {
 		slog.Error("Ask error:", err)
